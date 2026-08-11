@@ -1,6 +1,6 @@
 [package]
 name = "arclume"
-version = "0.1.0"
+version = "0.1.1"
 description = "A fast, cross-platform universal launcher"
 authors = ["Arclume contributors"]
 edition = "2024"
