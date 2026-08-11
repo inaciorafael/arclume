@@ -1,0 +1,34 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://arclume.local/schemas/plugin-v1.json",
+  "title": "Arclume plugin manifest v1",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["id", "name", "version", "pluginApiVersion", "entrypoint", "capabilities", "contributes"],
+  "properties": {
+    "id": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$", "maxLength": 64 },
+    "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+    "version": { "type": "string", "pattern": "^(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)\\.(0|[1-9][0-9]*)(?:-[0-9A-Za-z.-]+)?$" },
+    "pluginApiVersion": { "const": 1 },
+    "entrypoint": { "type": "string", "minLength": 1, "maxLength": 160 },
+    "capabilities": {
+      "type": "array",
+      "uniqueItems": true,
+      "items": { "enum": ["clipboard:read", "clipboard:write", "filesystem:read", "network:fetch"] }
+    },
+    "contributes": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["providers"],
+      "properties": {
+        "providers": {
+          "type": "array",
+          "minItems": 1,
+          "maxItems": 8,
+          "uniqueItems": true,
+          "items": { "type": "string", "pattern": "^[a-z][a-z0-9]*(?:-[a-z0-9]+)*$", "maxLength": 64 }
+        }
+      }
+    }
+  }
+}

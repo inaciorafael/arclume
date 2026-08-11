@@ -1,0 +1,62 @@
+name: Package dry run
+
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  package:
+    name: Unsigned package (${{ matrix.platform }})
+    runs-on: ${{ matrix.platform }}
+    timeout-minutes: 60
+    strategy:
+      fail-fast: false
+      matrix:
+        platform: [ubuntu-22.04, windows-latest, macos-latest]
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+
+      - name: Install Linux build prerequisites
+        if: runner.os == 'Linux'
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.12.0
+          package-manager-cache: false
+
+      - name: Install pinned Rust toolchain
+        run: rustup toolchain install 1.97.1 --profile minimal
+
+      - name: Install frontend dependencies
+        run: npm ci
+
+      - name: Build unsigned local bundles
+        run: npm run tauri build -- --ci --no-sign
+
+      - name: Generate release evidence
+        run: |
+          npm run inventory
+          npm run release:preflight
+          npm run license:audit
+          npm run checksums -- --directory src-tauri/target/release/bundle
+
+      - name: Summarize generated bundles
+        shell: pwsh
+        run: |
+          "### ${{ runner.os }} unsigned dry run" >> $env:GITHUB_STEP_SUMMARY
+          Get-ChildItem src-tauri/target/release/bundle -Recurse -File |
+            ForEach-Object { "- $($_.FullName.Substring($env:GITHUB_WORKSPACE.Length + 1)) ($($_.Length) bytes)" } |
+            Add-Content $env:GITHUB_STEP_SUMMARY
+          "" >> $env:GITHUB_STEP_SUMMARY
+          "#### SHA-256" >> $env:GITHUB_STEP_SUMMARY
+          Get-Content artifacts/SHA256SUMS | ForEach-Object { "- ``$_``" } | Add-Content $env:GITHUB_STEP_SUMMARY
+
+      # Deliberately no upload-artifact, release, signing or publishing step.

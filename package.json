@@ -1,0 +1,36 @@
+{
+  "name": "arclume",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "vue-tsc --noEmit && vite build",
+    "ci:frontend": "npm run build && npm run sdk:typecheck && npm run plugin:test && npm run plugin:validate -- plugins/hello-world/plugin.json",
+    "sdk:typecheck": "tsc --noEmit -p packages/plugin-sdk/tsconfig.json",
+    "plugin:test": "node --test tools/plugin-cli.test.mjs",
+    "plugin:validate": "node tools/plugin-cli.mjs validate",
+    "plugin:create": "node tools/plugin-cli.mjs create",
+    "inventory": "node tools/dependency-inventory.mjs",
+    "inventory:test": "node --test tools/dependency-inventory.test.mjs",
+    "checksums": "node tools/artifact-checksums.mjs",
+    "checksums:test": "node --test tools/artifact-checksums.test.mjs",
+    "release:preflight": "node tools/release-preflight.mjs",
+    "release:preflight:test": "node --test tools/release-preflight.test.mjs",
+    "license:audit": "node tools/license-audit.mjs",
+    "license:audit:test": "node --test tools/license-audit.test.mjs",
+    "preview": "vite preview",
+    "tauri": "tauri"
+  },
+  "dependencies": {
+    "@tauri-apps/api": "2.11.1",
+    "vue": "3.5.40"
+  },
+  "devDependencies": {
+    "@tauri-apps/cli": "2.11.4",
+    "@vitejs/plugin-vue": "6.0.8",
+    "typescript": "6.0.3",
+    "vite": "8.1.5",
+    "vue-tsc": "3.3.9"
+  }
+}

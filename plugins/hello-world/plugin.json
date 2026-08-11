@@ -1,0 +1,11 @@
+{
+  "id": "hello-world",
+  "name": "Hello World",
+  "version": "0.1.0",
+  "pluginApiVersion": 1,
+  "entrypoint": "builtin:hello-world",
+  "capabilities": [],
+  "contributes": {
+    "providers": ["greeting"]
+  }
+}
