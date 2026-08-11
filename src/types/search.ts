@@ -14,6 +14,13 @@ export interface SearchResponse {
   diagnostics: SearchDiagnostics;
 }
 
+export interface DictionaryEntry {
+  word: string;
+  definitions: string[];
+  source: string;
+  cached: boolean;
+}
+
 export interface SearchDiagnostics {
   catalogSnapshotMicros: number;
   fileProviderMicros: number;

@@ -7,7 +7,7 @@ import { GLOBAL_SHORTCUT_OPTIONS, getGlobalShortcut, setGlobalShortcut } from ".
 import { addIndexRoot, getIndexRoots, removeIndexRoot } from "./services/indexing";
 import { getApplicationIcon } from "./services/icons";
 import { clearClipboardHistory, getClipboardImage, getClipboardSettings, listClipboardItems, restoreClipboardItem, setClipboardSettings, type ClipboardItem, type ClipboardSettings } from "./services/clipboard";
-import type { SearchDiagnostics, SearchResult } from "./types/search";
+import type { DictionaryEntry, SearchDiagnostics, SearchResult } from "./types/search";
 
 const input = ref<HTMLInputElement>();
 const settingsDialog = ref<HTMLDialogElement>();
@@ -35,6 +35,8 @@ const diagnostics = ref<SearchDiagnostics>();
 const performanceSamples = ref<Array<{ roundTripMicros: number; renderMicros: number }>>([]);
 const errorMessage = ref("");
 const confirmationId = ref<string>();
+const dictionaryEntry = ref<DictionaryEntry>();
+const dictionaryLoading = ref(false);
 const settingsOpen = ref(false);
 const preferences = reactive(loadPreferences());
 const systemTheme = window.matchMedia("(prefers-color-scheme: dark)");
@@ -141,7 +143,10 @@ function scheduleSearch(value: string, immediate = false) {
   searchTimer = setTimeout(() => void drainSearchQueue(), 16);
 }
 
-watch(query, (value) => scheduleSearch(value));
+watch(query, (value) => {
+  dictionaryEntry.value = undefined;
+  scheduleSearch(value);
+});
 watch(selectedClipboardItem, async (item) => {
   clipboardImage.value = "";
   if (item?.kind === "image") {
@@ -226,10 +231,18 @@ async function executeSelection() {
     return;
   }
   try {
-    await executeResult(selected.id, query.value, selected.title, selected.kind, confirmationId.value === selected.id);
+    dictionaryLoading.value = selected.id.startsWith("dictionary:");
+    const entry = await executeResult(selected.id, query.value, selected.title, selected.kind, confirmationId.value === selected.id);
+    if (entry) {
+      dictionaryEntry.value = entry;
+      errorMessage.value = "";
+      return;
+    }
     await hideLauncher();
   } catch (error) {
     errorMessage.value = String(error);
+  } finally {
+    dictionaryLoading.value = false;
   }
 }
 
@@ -320,6 +333,7 @@ function handleKeydown(event: KeyboardEvent) {
   } else if (event.key === "Escape") {
     event.preventDefault();
     if (confirmationId.value) confirmationId.value = undefined;
+    else if (dictionaryEntry.value) dictionaryEntry.value = undefined;
     else if (query.value) query.value = "";
     else void hideLauncher();
   }
@@ -432,13 +446,22 @@ onBeforeUnmount(() => {
         </ul>
 
         <aside v-if="preferences.showPreview" class="preview" aria-label="Selected result preview">
-          <template v-if="selectedResult">
+          <template v-if="dictionaryEntry && selectedResult?.id.startsWith('dictionary:')">
+            <span class="kind-pill">Dicionário</span>
+            <h2>{{ dictionaryEntry.word }}</h2>
+            <ol class="dictionary-definitions">
+              <li v-for="definition in dictionaryEntry.definitions" :key="definition">{{ definition }}</li>
+            </ol>
+            <p class="dictionary-source">{{ dictionaryEntry.source }}<span v-if="dictionaryEntry.cached"> · cache local</span></p>
+            <div class="preview-action"><span>Esc para voltar</span><kbd>Esc</kbd></div>
+          </template>
+          <template v-else-if="selectedResult">
             <span class="preview-icon result-icon" :data-kind="selectedResult.kind" aria-hidden="true"><img v-if="applicationIcons.get(selectedResult.id)" :src="applicationIcons.get(selectedResult.id)" alt="" /></span>
             <span class="kind-pill">{{ resultKindLabel(selectedResult.kind) }}</span>
             <h2>{{ selectedResult.title }}</h2>
             <p>{{ selectedResult.subtitle }}</p>
             <div class="preview-action">
-              <span>{{ selectedResult.requiresConfirmation ? "Confirmation required" : "Ready to open" }}</span>
+              <span>{{ dictionaryLoading ? "Consultando…" : selectedResult.requiresConfirmation ? "Confirmation required" : "Ready to open" }}</span>
               <kbd>Enter</kbd>
             </div>
             <section v-if="preferences.showPerformancePanel && diagnostics" class="performance-panel" aria-label="Local performance diagnostics">

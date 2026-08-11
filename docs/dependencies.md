@@ -20,6 +20,8 @@ Verified on 2026-08-10. Exact JavaScript versions are locked in `package-lock.js
 | `criterion` | 0.8.2 | Development-only statistical benchmark harness |
 | `tauri-plugin-clipboard-manager` | 2.3.2 | Official write-only clipboard integration for action results |
 | `xcap` | 0.9.8 | Apache-2.0 cross-platform primary-monitor capture for the screenshot action |
+| `reqwest` | 0.13.4 | Bounded HTTPS client for explicit online dictionary lookups |
+| `quick-xml` | 0.41.0 | Streaming extraction of definitions from the dictionary TEI XML |
 | `actions/checkout` | commit `3d3c42e` (v7.0.1) | CI-only repository checkout, pinned immutably |
 | `actions/setup-node` | commit `8207627` (v7.0.0) | CI-only Node provisioning, pinned immutably |
 

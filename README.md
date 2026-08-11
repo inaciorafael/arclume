@@ -4,7 +4,9 @@ Arclume is a fast, keyboard-first, cross-platform launcher built with Tauri 2, R
 
 ## Current scope
 
-Phase 19 adds lazy native Windows application icons and configurable file-index roots. Search coverage remains explicit: add `C:\Projects` or another existing folder in Settings instead of silently indexing the entire system drive.
+Arclume searches applications, indexed files and actions, keeps an optional bounded clipboard history, captures screenshots and supports explicit online Portuguese dictionary lookups without sending keystrokes over the network.
+
+Dictionary usage, privacy and cache limits are documented in [Portuguese dictionary](docs/portuguese-dictionary.md).
 
 ## Prerequisites
 

@@ -8,6 +8,7 @@ use super::normalize::normalize;
 use super::ranking::{acronym_score, text_score};
 use crate::actions::ActionItem;
 use crate::apps::AppEntry;
+use crate::dictionary::query_word;
 use crate::history::RecentItem;
 use crate::index::IndexedItem;
 use crate::plugins::PluginItem;
@@ -130,6 +131,16 @@ pub fn search_applications(
         score: item.score + boosts.get(&item.id).copied().unwrap_or_default(),
         requires_confirmation: false,
     }));
+    if let Some(word) = query_word(query) {
+        results.push(SearchResult {
+            id: format!("dictionary:{word}"),
+            kind: "action",
+            title: format!("Definir \u{201c}{word}\u{201d}"),
+            subtitle: "Dicionário português online · Enter para consultar".into(),
+            score: 9_650,
+            requires_confirmation: false,
+        });
+    }
     if normalize(query) == "clearhistory" {
         results.push(SearchResult {
             id: "history:clear".into(),
@@ -253,5 +264,34 @@ mod tests {
             );
         assert_eq!(response.elapsed_micros, 123);
         assert_eq!(response.diagnostics.file_provider_micros, 7);
+    }
+
+    #[test]
+    fn offers_dictionary_lookup_only_for_explicit_commands() {
+        let explicit = search_applications(
+            11,
+            "definir resiliência",
+            &[],
+            &[],
+            &[],
+            &HashMap::new(),
+            &[],
+            &[],
+            10,
+        );
+        assert_eq!(explicit.results[0].id, "dictionary:resiliência");
+
+        let ordinary = search_applications(
+            12,
+            "resiliência",
+            &[],
+            &[],
+            &[],
+            &HashMap::new(),
+            &[],
+            &[],
+            10,
+        );
+        assert!(ordinary.results.is_empty());
     }
 }

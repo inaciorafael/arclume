@@ -6,6 +6,7 @@ use tauri_plugin_global_shortcut::ShortcutState;
 mod actions;
 mod apps;
 mod clipboard;
+mod dictionary;
 mod history;
 mod index;
 mod plugins;
@@ -19,6 +20,7 @@ use std::sync::Arc;
 use actions::ActionCatalog;
 use apps::AppCatalog;
 use clipboard::ClipboardHistory;
+use dictionary::{DictionaryEntry, DictionaryProvider};
 use history::HistoryStore;
 use index::FileIndex;
 use plugins::PluginManager;
@@ -85,39 +87,47 @@ async fn search(
     clippy::too_many_arguments,
     reason = "Tauri injects managed state while the remaining fields are the stable IPC command contract"
 )]
-fn execute_result(
-    id: &str,
+async fn execute_result(
+    id: String,
     catalog: tauri::State<'_, AppCatalog>,
     file_index: tauri::State<'_, Arc<FileIndex>>,
     actions: tauri::State<'_, ActionCatalog>,
     app: tauri::AppHandle,
     confirmed: bool,
-    query: &str,
-    title: &str,
-    kind: &str,
+    query: String,
+    title: String,
+    kind: String,
     history: tauri::State<'_, HistoryStore>,
     plugins: tauri::State<'_, PluginManager>,
-) -> Result<(), String> {
+    dictionary: tauri::State<'_, DictionaryProvider>,
+) -> Result<Option<DictionaryEntry>, String> {
+    if let Some(word) = id.strip_prefix("dictionary:") {
+        let entry = dictionary.lookup(word).await?;
+        history.record(&query, &id, &title, &kind)?;
+        return Ok(Some(entry));
+    }
     if id == "history:clear" {
         if !confirmed {
             return Err("confirmation required".into());
         }
-        return history.clear();
+        history.clear()?;
+        return Ok(None);
     }
     let result = if id.starts_with("plugin:") {
-        plugins.execute(id)
+        plugins.execute(&id)
     } else if id.starts_with("action:") {
-        actions.execute(&app, id, confirmed)
+        actions.execute(&app, &id, confirmed)
     } else if let Some(raw_id) = id.strip_prefix("file:") {
         let id = raw_id
             .parse::<i64>()
             .map_err(|_| "invalid file identifier")?;
         file_index.open_item(id)
     } else {
-        catalog.launch(id)
+        catalog.launch(&id)
     };
     result?;
-    history.record(query, id, title, kind)
+    history.record(&query, &id, &title, &kind)?;
+    Ok(None)
 }
 
 #[tauri::command]
@@ -199,6 +209,8 @@ pub fn run() {
     let shortcut_settings = ShortcutSettings::load();
     let clipboard_history = ClipboardHistory::open(&file_index.database_path())
         .expect("failed to open local clipboard history");
+    let dictionary = DictionaryProvider::open(&file_index.database_path())
+        .expect("failed to initialize Portuguese dictionary");
 
     tauri::Builder::default()
         .manage(catalog)
@@ -207,6 +219,7 @@ pub fn run() {
         .manage(history)
         .manage(shortcut_settings)
         .manage(Arc::clone(&clipboard_history))
+        .manage(dictionary)
         .manage(PluginManager)
         .plugin(
             tauri_plugin_global_shortcut::Builder::new()
