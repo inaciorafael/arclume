@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.3.0](https://github.com/inaciorafael/arclume/compare/arclume-v0.2.0...arclume-v0.3.0) (2026-08-11)
+
+
+### Features
+
+* add typo-tolerant fuzzy search ([b835be6](https://github.com/inaciorafael/arclume/commit/b835be633eb39b81a3c84a35ca36f7dc439ac2e6))
+
 ## [0.2.0](https://github.com/inaciorafael/arclume/compare/arclume-v0.1.1...arclume-v0.2.0) (2026-08-11)
 
 
