@@ -1,5 +1,6 @@
 use std::collections::hash_map::DefaultHasher;
 use std::hash::{Hash, Hasher};
+#[cfg(any(target_os = "windows", target_os = "macos"))]
 use std::path::PathBuf;
 use std::process::Command;
 

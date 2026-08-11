@@ -112,9 +112,7 @@ mod tests {
         )
         .unwrap();
         assert_eq!(entry.title, "Code");
-        let LaunchSpec::LinuxCommand { program, args } = entry.launch else {
-            panic!("wrong launch kind")
-        };
+        let LaunchSpec::LinuxCommand { program, args } = entry.launch;
         assert_eq!(program, "code");
         assert_eq!(args, ["--reuse-window"]);
     }

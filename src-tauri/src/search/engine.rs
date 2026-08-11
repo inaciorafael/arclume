@@ -174,6 +174,7 @@ pub fn search_applications(
 mod tests {
     use super::*;
     use crate::apps::LaunchSpec;
+    #[cfg(any(target_os = "windows", target_os = "macos"))]
     use std::path::PathBuf;
 
     fn app(title: &str) -> AppEntry {
