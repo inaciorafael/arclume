@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.2.0](https://github.com/inaciorafael/arclume/compare/arclume-v0.1.1...arclume-v0.2.0) (2026-08-11)
+
+
+### Features
+
+* add integrated screenshot action ([4f99983](https://github.com/inaciorafael/arclume/commit/4f999838b24a06c2abda748c879f3a11743cc024))
+
 ## [0.1.1](https://github.com/inaciorafael/arclume/compare/arclume-v0.1.0...arclume-v0.1.1) (2026-08-11)
 
 
