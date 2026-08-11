@@ -2,7 +2,7 @@
 
 ## Candidate preparation
 
-- [ ] Choose the release version and update every version-bearing manifest consistently.
+- [ ] Review the version and synchronized manifests in the Release Please pull request.
 - [ ] Generate fresh inventory and pass `npm run release:preflight`.
 - [ ] Review the diff, locked dependency changes, licenses and security-sensitive capabilities.
 - [ ] Pass `npm run license:audit` and complete human review of applicable license texts/notices.
@@ -34,6 +34,6 @@
 - [ ] Confirm download, signature, checksum and installation from the public location.
 - [ ] Retain provenance and CI evidence for the released version.
 
-Pushing a version tag matching `vMAJOR.MINOR.PATCH` starts the prerelease workflow. Until platform signing and clean-machine acceptance are complete, the workflow must keep `prerelease: true` and its unsigned-package warning.
+Merging the Release Please pull request creates the version tag and prerelease, then invokes the reusable packaging workflow for Linux, Windows and macOS. Pushing a `v*` tag remains a manual fallback. Until platform signing and clean-machine acceptance are complete, both paths must keep `prerelease: true` and the unsigned-package warning.
 
 No item in this checklist is implied complete merely because an unsigned local installer was generated.

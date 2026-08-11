@@ -91,7 +91,7 @@ dependencies = [
 
 [[package]]
 name = "arclume"
-version = "0.1.0"
+version = "0.1.0" # x-release-please-version
 dependencies = [
  "base64 0.23.1",
  "criterion",
