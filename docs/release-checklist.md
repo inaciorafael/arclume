@@ -34,4 +34,6 @@
 - [ ] Confirm download, signature, checksum and installation from the public location.
 - [ ] Retain provenance and CI evidence for the released version.
 
+Pushing a version tag matching `vMAJOR.MINOR.PATCH` starts the prerelease workflow. Until platform signing and clean-machine acceptance are complete, the workflow must keep `prerelease: true` and its unsigned-package warning.
+
 No item in this checklist is implied complete merely because an unsigned local installer was generated.
