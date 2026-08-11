@@ -2,7 +2,9 @@ name: CI
 
 on:
   push:
+    branches: [main]
   pull_request:
+    branches: [main]
   workflow_dispatch:
 
 permissions:
@@ -12,9 +14,65 @@ concurrency:
   group: ci-${{ github.workflow }}-${{ github.ref }}
   cancel-in-progress: true
 
+env:
+  CARGO_TERM_COLOR: always
+  CARGO_INCREMENTAL: "0"
+
 jobs:
-  validate:
-    name: Validate (${{ matrix.platform }})
+  quality:
+    name: Quality gates
+    runs-on: ubuntu-22.04
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+
+      - name: Install Linux build prerequisites
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
+
+      - name: Set up Node.js
+        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: 22.12.0
+          cache: npm
+          cache-dependency-path: package-lock.json
+
+      - name: Install pinned Rust toolchain
+        run: rustup toolchain install 1.97.1 --profile minimal --component rustfmt --component clippy
+
+      - name: Install frontend dependencies
+        run: npm ci --ignore-scripts
+
+      - name: Validate frontend, SDK, and plugin contract
+        run: npm run ci:frontend
+
+      - name: Test release tooling
+        run: |
+          npm run inventory:test
+          npm run checksums:test
+          npm run release:preflight:test
+          npm run license:audit:test
+
+      - name: Validate dependency and release evidence
+        run: |
+          npm run inventory
+          npm run release:preflight
+          npm run license:audit
+
+      - name: Check Rust formatting
+        run: cargo fmt --manifest-path src-tauri/Cargo.toml --check
+
+      - name: Lint Rust targets
+        run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features --locked -- -D warnings
+
+  desktop:
+    name: Desktop (${{ matrix.platform }})
+    needs: quality
     runs-on: ${{ matrix.platform }}
     timeout-minutes: 45
     strategy:
@@ -25,52 +83,30 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
 
       - name: Install Linux build prerequisites
         if: runner.os == 'Linux'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
+          sudo apt-get install -y --no-install-recommends libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf xdg-utils
 
       - name: Set up Node.js
         uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
           node-version: 22.12.0
-          package-manager-cache: false
+          cache: npm
+          cache-dependency-path: package-lock.json
 
       - name: Install pinned Rust toolchain
-        run: rustup toolchain install 1.97.1 --profile minimal --component rustfmt --component clippy
+        run: rustup toolchain install 1.97.1 --profile minimal
 
       - name: Install frontend dependencies
-        run: npm ci
-
-      - name: Validate frontend and SDK
-        run: npm run ci:frontend
-
-      - name: Test dependency inventory tooling
-        run: npm run inventory:test && npm run checksums:test
-
-      - name: Generate dependency inventory
-        run: npm run inventory
-
-      - name: Validate release metadata
-        run: |
-          npm run release:preflight:test
-          npm run release:preflight
-
-      - name: Audit declared licenses
-        run: |
-          npm run license:audit:test
-          npm run license:audit
-
-      - name: Check Rust formatting
-        run: cargo fmt --manifest-path src-tauri/Cargo.toml --check
-
-      - name: Lint Rust targets
-        run: cargo clippy --manifest-path src-tauri/Cargo.toml --all-targets --all-features -- -D warnings
+        run: npm ci --ignore-scripts
 
       - name: Test Rust targets
-        run: cargo test --manifest-path src-tauri/Cargo.toml --all-targets
+        run: cargo test --manifest-path src-tauri/Cargo.toml --workspace --locked
 
       - name: Compile desktop application without bundles
         run: npm run tauri build -- --ci --no-bundle

@@ -118,14 +118,14 @@ impl ClipboardHistory {
                     last_hash.clear();
                     continue;
                 }
-                if let Ok(text) = app.clipboard().read_text() {
-                    if !text.is_empty() {
-                        let hash = content_hash(b"text", text.as_bytes());
-                        if hash != last_hash && history.record_text(&hash, &text).is_ok() {
-                            last_hash = hash;
-                        }
-                        continue;
+                if let Ok(text) = app.clipboard().read_text()
+                    && !text.is_empty()
+                {
+                    let hash = content_hash(b"text", text.as_bytes());
+                    if hash != last_hash && history.record_text(&hash, &text).is_ok() {
+                        last_hash = hash;
                     }
+                    continue;
                 }
                 if let Ok(image) = app.clipboard().read_image() {
                     let hash = content_hash(b"image", image.rgba());
