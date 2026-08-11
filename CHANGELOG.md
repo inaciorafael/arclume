@@ -1,5 +1,12 @@
 # Changelog
 
+## [0.4.0](https://github.com/inaciorafael/arclume/compare/arclume-v0.3.0...arclume-v0.4.0) (2026-08-11)
+
+
+### Features
+
+* add online Portuguese dictionary ([2e231d6](https://github.com/inaciorafael/arclume/commit/2e231d686a75b89cf1c6d26137956a65c2610743))
+
 ## [0.3.0](https://github.com/inaciorafael/arclume/compare/arclume-v0.2.0...arclume-v0.3.0) (2026-08-11)
 
 
