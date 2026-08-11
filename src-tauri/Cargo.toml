@@ -27,7 +27,7 @@ rusqlite = { version = "=0.40.2", features = ["bundled"] }
 notify = "=8.2.0"
 directories = "=6.0.0"
 tauri-plugin-clipboard-manager = "=2.3.2"
-base64 = "=0.22.1"
+base64 = "=0.23.1"
 image = { version = "=0.25.10", default-features = false, features = ["png"] }
 sha2 = "=0.10.9"
 
