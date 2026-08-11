@@ -358,10 +358,17 @@ fn load_settings(path: &Path) -> ClipboardSettings {
 }
 
 fn content_hash(kind: &[u8], content: &[u8]) -> String {
+    use std::fmt::Write;
+
     let mut digest = Sha256::new();
     digest.update(kind);
     digest.update(content);
-    format!("{:x}", digest.finalize())
+    let digest = digest.finalize();
+    let mut encoded = String::with_capacity(digest.len() * 2);
+    for byte in digest {
+        write!(&mut encoded, "{byte:02x}").expect("writing to a String cannot fail");
+    }
+    encoded
 }
 
 fn now_seconds() -> i64 {

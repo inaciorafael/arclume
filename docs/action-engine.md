@@ -20,6 +20,12 @@ Supported pairs currently include kilometers/miles, meters/feet, Celsius/Fahrenh
 
 The core rechecks confirmation. UI confirmation alone is not a security boundary.
 
+## Screenshot
+
+`screenshot`, `print screen`, `capture screen`, `tirar print`, `print da tela` and `captura de tela` capture the primary monitor. Arclume hides its own window before capture, writes a timestamped PNG under the user's `Pictures/Arclume` directory and copies the image to the system clipboard. When clipboard history is enabled, its existing bounded retention policy captures that copied image normally.
+
+The first version deliberately excludes region selection, window selection and recording. macOS can request Screen Recording permission, and Linux capture availability depends on the active X11/Wayland desktop session.
+
 ## Clipboard
 
 Calculation and conversion results use the official Tauri clipboard manager from Rust. Only write access is used. No clipboard history or read permission is introduced in this phase.

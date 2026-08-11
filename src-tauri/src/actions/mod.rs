@@ -1,5 +1,6 @@
 mod calculator;
 mod conversions;
+mod screenshot;
 mod system;
 
 use std::collections::HashMap;
@@ -21,6 +22,7 @@ pub struct ActionItem {
 #[derive(Clone, Debug)]
 enum Action {
     Copy(String),
+    Screenshot(screenshot::ScreenshotAction),
     System(system::SystemAction),
 }
 
@@ -60,6 +62,15 @@ impl ActionCatalog {
                 Action::System(action),
             ));
         }
+        if let Some(action) = screenshot::ScreenshotAction::parse(query) {
+            candidates.push(self.register(
+                "Capture primary screen".into(),
+                "Screenshot · saves to Pictures/Arclume and copies".into(),
+                9_550,
+                false,
+                Action::Screenshot(action),
+            ));
+        }
         candidates
     }
 
@@ -76,6 +87,7 @@ impl ActionCatalog {
                 .clipboard()
                 .write_text(value)
                 .map_err(|error| error.to_string()),
+            Action::Screenshot(action) => action.execute(app),
             Action::System(action) => {
                 if action.requires_confirmation() && !confirmed {
                     return Err("confirmation required".into());

@@ -10,6 +10,7 @@ const APPROVED = new Set([
 const APPROVED_EXCEPTIONS = new Set(["LLVM-exception"]);
 const LEGACY = new Map([
   ["MIT/Apache-2.0", "MIT OR Apache-2.0"],
+  ["MIT / Apache-2.0", "MIT OR Apache-2.0"],
   ["Apache-2.0/MIT", "Apache-2.0 OR MIT"],
   ["Apache-2.0 / MIT", "Apache-2.0 OR MIT"],
   ["BSD-3-Clause/MIT", "BSD-3-Clause OR MIT"],
